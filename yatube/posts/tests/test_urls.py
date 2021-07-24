@@ -17,6 +17,7 @@ SLUG = "test-slug"
 DESCRIPTION = "Описание"
 TEXT = "Текст"
 
+
 class TaskURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -62,7 +63,8 @@ class TaskURLTests(TestCase):
                 self.assertEqual(response.status_code, 200)
 
     """Проверка ожидаемых кодов 
-    редиректов в соответствии с правами пользователей"""
+    редиректов в соответствии с правами пользователей
+    """
     def test_all_urls_redirect_code(self):
         type_client_urls_tuples = (
             (f"/{NEW_POST_LINK}/", self.guest_client),
@@ -84,14 +86,20 @@ class TaskURLTests(TestCase):
         templates_url_names = {
             "posts/index.html": "/",
             "posts/group.html": f"/{GROUP_LINK}/{self.group.slug}/",
-            "users/new_post.html": f"/{NEW_POST_LINK}/",
-            "users/new_post.html": f"/{self.user.username}/"
-                                   f"{self.post.pk}/{EDIT_LINK}/"
+            "users/new_post.html": f"/{NEW_POST_LINK}/"
         }
         for template, adress in templates_url_names.items():
             with self.subTest(adress=adress):
                 response = self.authorized_client.get(adress)
                 self.assertTemplateUsed(response, template)
+
+    """Вызывается ошидаемый шаблон для страницы редактирования"""
+    def test_edit_url_correct_template(self):
+        cache.clear()
+        response = self.authorized_client.get(
+            f"/{self.user.username}/{self.post.pk}/{EDIT_LINK}/"
+        )
+        self.assertTemplateUsed(response, "users/new_post.html")
 
     """Вызываются ли ожидаемые редиректы в соответствии с правами 
     пользователей"""

@@ -200,7 +200,8 @@ class TaskPagesTests(TestCase):
         )
 
     """Авторизованный пользователь может подписываться/отписываться на/от 
-    других"""
+    других
+    """
     def test_authorized_user_can_follow_unfollow_another_users(self):
         self.user_1 = User.objects.create_user(username="test_user_1")
         followings_before = self.user_1.following.count()
