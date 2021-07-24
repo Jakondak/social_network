@@ -199,7 +199,8 @@ class TaskPagesTests(TestCase):
             len(response.context.get("page").object_list)
         )
 
-    """Авторизованный пользователь может подписываться/отписываться на/от 
+    """
+    Авторизованный пользователь может подписываться/отписываться на/от 
     других
     """
     def test_authorized_user_can_follow_unfollow_another_users(self):
