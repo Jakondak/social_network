@@ -12,7 +12,10 @@ NEW_POST_LINK = "new"
 EDIT_LINK = "edit"
 REDIRECT_ON_LOGIN_PAGE_LINK = "auth/login/?next="
 COMMENT_LINK = "comment"
-
+TITLE = "Название"
+SLUG = "test-slug"
+DESCRIPTION = "Описание"
+TEXT = "Текст"
 
 class TaskURLTests(TestCase):
     @classmethod
@@ -21,12 +24,12 @@ class TaskURLTests(TestCase):
         cls.user = User.objects.create_user(username="test_user")
         cls.user_watcher = User.objects.create_user(username="watcher")
         cls.group = Group.objects.create(
-            title="Заголовок",
-            slug="test-slug",
-            description="description",
+            title=TITLE,
+            slug=SLUG,
+            description=DESCRIPTION,
         )
         cls.post = Post.objects.create(
-            text="Тестовый текст",
+            text=TEXT,
             author=cls.user,
             group=cls.group,
         )
@@ -38,6 +41,7 @@ class TaskURLTests(TestCase):
         self.authorized_watcher_client = Client()
         self.authorized_watcher_client.force_login(self.user_watcher)
 
+    """Проверка доступности страниц в соответствии с правами пользователей"""
     def test_all_urls_exist_at_desired_location(self):
         type_client_urls_tuples = (
             (reverse("index"), self.guest_client),
@@ -57,6 +61,8 @@ class TaskURLTests(TestCase):
                 response = client_type.get(adress)
                 self.assertEqual(response.status_code, 200)
 
+    """Проверка ожидаемых кодов 
+    редиректов в соответствии с правами пользователей"""
     def test_all_urls_redirect_code(self):
         type_client_urls_tuples = (
             (f"/{NEW_POST_LINK}/", self.guest_client),
@@ -72,25 +78,23 @@ class TaskURLTests(TestCase):
                 response = client_type.get(adress)
                 self.assertEqual(response.status_code, 302)
 
+    """Вызываются ли ожидаемые шаблоны"""
     def test_urls_uses_correct_template(self):
         cache.clear()
         templates_url_names = {
             "posts/index.html": "/",
             "posts/group.html": f"/{GROUP_LINK}/{self.group.slug}/",
             "users/new_post.html": f"/{NEW_POST_LINK}/",
-
+            "users/new_post.html": f"/{self.user.username}/"
+                                   f"{self.post.pk}/{EDIT_LINK}/"
         }
         for template, adress in templates_url_names.items():
             with self.subTest(adress=adress):
                 response = self.authorized_client.get(adress)
                 self.assertTemplateUsed(response, template)
 
-    def test_post_edit_url_uses_correct_template(self):
-        response = self.authorized_client.get(
-            f"/{self.user.username}/{self.post.pk}/{EDIT_LINK}/"
-        )
-        self.assertTemplateUsed(response, "users/new_post.html")
-
+    """Вызываются ли ожидаемые редиректы в соответствии с правами 
+    пользователей"""
     def test_redirects_assert(self):
         type_client_urls_tuples = (
             (f"/{self.user.username}/{self.post.pk}/{EDIT_LINK}/",
@@ -113,6 +117,7 @@ class TaskURLTests(TestCase):
                 response = client_type.get(adress)
                 self.assertRedirects(response, adress_redirect)
 
+    """Вызов ошибки 404 - не найдена страница"""
     def test_page_not_found_error(self):
         response = self.authorized_client.get(f"/{100*100}/")
         self.assertEqual(response.status_code, 404)

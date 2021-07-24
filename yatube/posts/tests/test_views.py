@@ -14,6 +14,11 @@ from ..models import Follow, Group, Post
 
 User = get_user_model()
 
+TITLE = "Название"
+SLUG = "test-slug"
+DESCRIPTION = "Описание"
+TEXT = "Текст"
+
 
 class TaskPagesTests(TestCase):
     @classmethod
@@ -22,8 +27,8 @@ class TaskPagesTests(TestCase):
         settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
         cls.user = User.objects.create_user(username="test_user")
         cls.group = Group.objects.create(
-            title="Test",
-            slug="test-slug"
+            title=TITLE,
+            slug=SLUG
         )
         small_gif = (
             b"\x47\x49\x46\x38\x39\x61\x02\x00"
@@ -40,7 +45,7 @@ class TaskPagesTests(TestCase):
         )
         cls.image = uploaded
         cls.post = Post.objects.create(
-            text="Тестовый текст",
+            text=TEXT,
             author=cls.user,
             group=cls.group,
             image=cls.image,
@@ -57,19 +62,22 @@ class TaskPagesTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
+    """Соответствует ли ожиданиям словарь context главной страницы"""
     def test_main_page_shows_correct_context(self):
         response = self.authorized_client.get(reverse("index"))
         first_object = response.context["page"][0]
         post_text = first_object.text
-        self.assertEqual(post_text, "Тестовый текст")
+        self.assertEqual(post_text, TEXT)
 
+    """Соответствует ли ожиданиям словарь context страницы группы"""
     def test_group_page_shows_correct_context(self):
         response = self.authorized_client.get(
             reverse("group", args=f"{self.group.slug}"))
         first_object = response.context["page"][0]
         post_text_0 = first_object.text
-        self.assertEqual(post_text_0, "Тестовый текст")
+        self.assertEqual(post_text_0, TEXT)
 
+    """Соответствует ли ожиданиям словарь context страницы создания поста"""
     def test_new_post_page_shows_correct_context(self):
         response = self.authorized_client.get(reverse("post_new"))
         form_fields = {
@@ -80,6 +88,8 @@ class TaskPagesTests(TestCase):
                 form_field = response.context["form"].fields[value]
                 self.assertIsInstance(form_field, expected)
 
+    """Соответствует ли ожиданиям словарь context страницы редактирования
+    отдельного поста"""
     def test_edit_post_page_shows_correct_context(self):
         response = self.authorized_client.get(f"/{self.user.username}/"
                                               f"{self.post.pk}/edit/")
@@ -91,20 +101,23 @@ class TaskPagesTests(TestCase):
                 form_field = response.context["form"].fields[value]
                 self.assertIsInstance(form_field, expected)
 
+    """При создании поста в группе1, он не появляется на старинице группы2"""
     def test_new_post_group_page_dont_show_on_another_group_page(self):
         response = self.authorized_client.get(
             reverse("group", args=[f"{self.group.slug}"]))
         first_object = response.context["page"][0]
         group = first_object.group
-        self.assertEqual(str(group), "Test")
+        self.assertEqual(str(group), TITLE)
 
+    """Соответствует ли ожиданиям словарь context стриницы профиля юзера"""
     def test_user_page_shows_correct_context(self):
         response = self.authorized_client.get(
             reverse("profile", args=[f"{self.user.username}"]))
         first_object = response.context["page"][0]
         post_text_0 = first_object.text
-        self.assertEqual(post_text_0, "Тестовый текст")
+        self.assertEqual(post_text_0, TEXT)
 
+    """Соответствует ли ожиданиям словарь context страницы отдельного поста"""
     def test_one_post_page_shows_correct_context(self):
         response = self.authorized_client.get(
             reverse(
@@ -114,8 +127,10 @@ class TaskPagesTests(TestCase):
         )
         first_object = response.context["post"]
         post_text_0 = first_object.text
-        self.assertEqual(post_text_0, "Тестовый текст")
+        self.assertEqual(post_text_0, TEXT)
 
+    """Соответствует ли ожиданиям словарь context дополнительные страницы о
+    технология и авторе"""
     def test_pages_uses_correct_template(self):
         templates_page_names = {
             "about/author.html": reverse("about:author"),
@@ -126,19 +141,21 @@ class TaskPagesTests(TestCase):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
+    """Соответствует ли ожиданиям словарь context страницы главной страницы"""
     def test_group_page_shows_correct_context(self):
-        """Шаблон главной страницы сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse("index"))
         first_object = response.context["page"][0]
         post_text_0 = first_object.text
         self.assertEqual(post_text_0, str(self.post))
 
+    """Картинка отображается на главной странице"""
     def test_main_page_shows_pict(self):
         response = self.authorized_client.get(reverse("index"))
         first_object = response.context["page"][0]
         image = first_object.image
         self.assertEqual(image.name.split("/")[-1], self.image.name)
 
+    """Картинка отображается на странице пользователя"""
     def test_profile_page_shows_pict(self):
         response = self.authorized_client.get(
             reverse("profile", args=[f"{self.user.username}"]))
@@ -146,6 +163,7 @@ class TaskPagesTests(TestCase):
         image = first_object.image
         self.assertEqual(image.name.split("/")[-1], self.image.name)
 
+    """Картинка отображается на странице группы"""
     def test_group_page_shows_pict(self):
         response = self.authorized_client.get(
             reverse("group", args=[f"{self.group.slug}"]))
@@ -153,6 +171,7 @@ class TaskPagesTests(TestCase):
         image = first_object.image
         self.assertEqual(image.name.split("/")[-1], self.image.name)
 
+    """Картинка отображается на странице отдельного поста"""
     def test_one_post_page_shows_pict(self):
         response = self.authorized_client.get(
             reverse(
@@ -164,9 +183,10 @@ class TaskPagesTests(TestCase):
         image = first_object.image
         self.assertEqual(image.name.split("/")[-1], self.image.name)
 
+    """Тестирование работы кэширования на главной странице"""
     def test_main_page_cache(self):
         response = self.authorized_client.get(reverse("index"))
-        test_post = Post.objects.create(
+        Post.objects.create(
             text="Тестовый текст в cache",
             author=self.user,
         )
@@ -179,6 +199,8 @@ class TaskPagesTests(TestCase):
             len(response.context.get("page").object_list)
         )
 
+    """Авторизованный пользователь может подписываться/отписываться на/от 
+    других"""
     def test_authorized_user_can_follow_unfollow_another_users(self):
         self.user_1 = User.objects.create_user(username="test_user_1")
         followings_before = self.user_1.following.count()
@@ -192,6 +214,8 @@ class TaskPagesTests(TestCase):
         self.assertNotEqual(followings_before, followings_after_follow)
         self.assertEqual(followings_before, followings_after_delete)
 
+    """Новая запись пользователя появляется в ленте тех, кто на него подписан
+     и не появляется в ленте тех, кто не подписан на него"""
     def test_new_post_shows_on_the_right_lenta_of_posts(self):
 
         self.user_1 = User.objects.create_user(username="test_user_1")
@@ -263,6 +287,7 @@ class PaginatorViewsTest(TestCase):
                  author=cls.user) for item in range(num)
         ])
 
+    """Тестрование работы Пагинатора"""
     def test_first_page_contains_certain_amount_records(self):
         response_first_page = self.authorized_client.get(reverse("index"))
         response_second_page = self.authorized_client.get(

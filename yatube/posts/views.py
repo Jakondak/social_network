@@ -127,7 +127,6 @@ def add_comment(request, username, post_id):
     author = get_object_or_404(User, username=username)
     post = get_object_or_404(Post, author=author, pk=post_id)
     form = CommentForm(request.POST or None)
-    comments = post.comments.all()
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user

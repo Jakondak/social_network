@@ -52,7 +52,6 @@ class Comment(models.Model):
 
 
 class Follow(models.Model):
-    # мы создаем столбец user_id в модели Follow, где будут id на строку в модели User
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

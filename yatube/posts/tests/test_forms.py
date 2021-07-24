@@ -12,6 +12,11 @@ from ..models import Comment, Group, Post
 
 User = get_user_model()
 MEDIA_ROOT_TEMP = tempfile.mkdtemp(dir=settings.BASE_DIR)
+EDIT_LINK = "edit"
+TITLE = "Название"
+SLUG = "test-slug"
+DESCRIPTION = "Описание"
+TEXT = "Текст"
 
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT_TEMP)
@@ -19,14 +24,13 @@ class TaskCreateFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        #settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
         cls.user = User.objects.create_user(username="test_user")
         cls.group = Group.objects.create(
-            title="Тестовое имя сообщества",
-            slug="test-slug",
-            description="Тестовое описание сообщества")
+            title=TITLE,
+            slug=SLUG,
+            description=DESCRIPTION)
         cls.post = Post.objects.create(
-            text="Тестовый текст",
+            text=TITLE,
             author=cls.user,
             group=cls.group,
         )
@@ -41,11 +45,12 @@ class TaskCreateFormTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
+    """Проверка формы создания нового поста"""
     def test_create_task(self):
         tasks_count = Post.objects.count()
 
         form_data = {
-            "text": "Тестовый заголовок",
+            "text": TEXT,
             "group": TaskCreateFormTests.group.id,
         }
         response = self.authorized_client.post(
@@ -56,19 +61,21 @@ class TaskCreateFormTests(TestCase):
         self.assertRedirects(response, reverse("index"))
         self.assertEqual(Post.objects.count(), tasks_count + 1)
 
+    """Проверка возможности редактирования поста"""
     def test_edit_post(self):
         form_data = {
-            "text": "Измененный тест",
+            "text": TEXT,
             "group": TaskCreateFormTests.group.id,
         }
         response = self.authorized_client.post(
-            f"/{self.user.username}/{self.post.pk}/edit/",
+            f"/{self.user.username}/{self.post.pk}/{EDIT_LINK}/",
             data=form_data,
             follow=True,
         )
         self.assertEqual(
-            str(response.context["post"]), "Измененный тест")
+            str(response.context["post"]), TEXT)
 
+    """Проверка добавления картинки к посту"""
     def test_form_pict(self):
         post_count = Post.objects.count()
         small_gif = (
@@ -85,7 +92,7 @@ class TaskCreateFormTests(TestCase):
             content_type="image/gif"
         )
         form_data = {
-            "text": "Тестовый заголовок",
+            "text": TEXT,
             "group": self.group.id,
             "image": uploaded,
         }
@@ -97,14 +104,19 @@ class TaskCreateFormTests(TestCase):
         self.assertEqual(Post.objects.count(), post_count + 1)
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
+    """Проверка возможности комментирования постов"""
     def test_create_comment(self):
         comments_count = Comment.objects.count()
 
         form_data = {
-            "text": "Тестовый комментарий",
+            "text": TEXT,
         }
         self.authorized_client.post(
-            reverse("add_comment", args=[f"{self.user.username}", f"{self.post.pk}"]),
+            reverse(
+                "add_comment",
+                args=[f"{self.user.username}",
+                      f"{self.post.pk}"]
+            ),
             data=form_data,
             follow=True,
         )
