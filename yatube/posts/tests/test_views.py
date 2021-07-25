@@ -187,9 +187,9 @@ class TaskPagesTests(TestCase):
     """
     def test_authorized_user_can_follow_unfollow_another_users(self):
         self.user_1 = User.objects.create_user(username="test_user_1")
-        followings_before = self.user_1.following.count()
+        followings_before = self.user_1.follower.count()
         self.follow = Follow.objects.create(author=self.user, user=self.user_1)
-        followings_after_follow = self.user_1.following.count()
+        followings_after_follow = self.user_1.follower.count()
         self.unfollow = Follow.objects.filter(
             author=self.user,
             user=self.user_1
@@ -245,7 +245,7 @@ class TaskPagesTests(TestCase):
             response_user_2_after_new_post.context["page"]
         )
 
-        self.assertEqual(
+        self.assertNotEqual(
             posts_count_user_1_before_new_post,
             posts_count_user_1_after_new_post
         )

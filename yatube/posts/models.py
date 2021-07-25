@@ -56,12 +56,12 @@ class Follow(models.Model):
         User,
         on_delete=models.CASCADE,
         null=True,
-        related_name="following")
+        related_name="follower")
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         null=True,
-        related_name="follower")
+        related_name="following")
 
     class Meta:
         constraints = [
