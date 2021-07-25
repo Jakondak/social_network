@@ -63,7 +63,7 @@ class TaskURLTests(TestCase):
                 self.assertEqual(response.status_code, 200)
 
     """
-    Проверка ожидаемых кодов 
+    Проверка ожидаемых кодов
     редиректов в соответствии с правами пользователей
     """
     def test_all_urls_redirect_code(self):
@@ -103,7 +103,7 @@ class TaskURLTests(TestCase):
         self.assertTemplateUsed(response, "users/new_post.html")
 
     """
-    Вызываются ли ожидаемые редиректы в соответствии с правами 
+    Вызываются ли ожидаемые редиректы в соответствии с правами
     пользователей
     """
     def test_redirects_assert(self):
