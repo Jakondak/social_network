@@ -19,11 +19,13 @@ class GroupAdmin(admin.ModelAdmin):
     search_fields = ("title",)
     empty_value_display = empty_value_display_constant
 
+
 @admin.register(Follow)
 class GroupAdmin(admin.ModelAdmin):
     list_display = ("user", "author")
     search_fields = ("user",)
     empty_value_display = empty_value_display_constant
+
 
 @admin.register(Comment)
 class GroupAdmin(admin.ModelAdmin):

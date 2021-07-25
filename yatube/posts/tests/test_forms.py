@@ -24,7 +24,8 @@ GIF = (
     b'\x00\x00\x00\x2C\x00\x00\x00\x00'
     b'\x02\x00\x01\x00\x00\x02\x02\x0C'
     b'\x0A\x00\x3B'
-        )
+)
+
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT_TEMP)
 class TaskCreateFormTests(TestCase):
