@@ -50,6 +50,12 @@ class Comment(models.Model):
     text = models.TextField()
     created = models.DateTimeField("date published", auto_now_add=True)
 
+    def __str__(self):
+        return self.text[:15]
+
+    class Meta:
+        ordering = ("-created",)
+
 
 class Follow(models.Model):
     user = models.ForeignKey(

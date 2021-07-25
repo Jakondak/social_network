@@ -17,7 +17,14 @@ TITLE = "Название"
 SLUG = "test-slug"
 DESCRIPTION = "Описание"
 TEXT = "Текст"
-
+GIF = (
+    b'\x47\x49\x46\x38\x39\x61\x02\x00'
+    b'\x01\x00\x80\x00\x00\x00\x00\x00'
+    b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+    b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+    b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+    b'\x0A\x00\x3B'
+        )
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT_TEMP)
 class TaskCreateFormTests(TestCase):
@@ -45,8 +52,8 @@ class TaskCreateFormTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
-    """Проверка формы создания нового поста"""
     def test_create_task(self):
+        """Проверка формы создания нового поста."""
         tasks_count = Post.objects.count()
 
         form_data = {
@@ -61,8 +68,8 @@ class TaskCreateFormTests(TestCase):
         self.assertRedirects(response, reverse("index"))
         self.assertEqual(Post.objects.count(), tasks_count + 1)
 
-    """Проверка возможности редактирования поста"""
     def test_edit_post(self):
+        """Проверка возможности редактирования поста."""
         form_data = {
             "text": TEXT,
             "group": TaskCreateFormTests.group.id,
@@ -75,17 +82,10 @@ class TaskCreateFormTests(TestCase):
         self.assertEqual(
             str(response.context["post"]), TEXT)
 
-    """Проверка добавления картинки к посту"""
     def test_form_pict(self):
+        """Проверка добавления картинки к посту"""
         post_count = Post.objects.count()
-        small_gif = (
-            b"\x47\x49\x46\x38\x39\x61\x02\x00"
-            b"\x01\x00\x80\x00\x00\x00\x00\x00"
-            b"\xFF\xFF\xFF\x21\xF9\x04\x00\x00"
-            b"\x00\x00\x00\x2C\x00\x00\x00\x00"
-            b"\x02\x00\x01\x00\x00\x02\x02\x0C"
-            b"\x0A\x00\x3B"
-        )
+        small_gif = GIF
         uploaded = SimpleUploadedFile(
             name="small.gif",
             content=small_gif,
@@ -104,8 +104,8 @@ class TaskCreateFormTests(TestCase):
         self.assertEqual(Post.objects.count(), post_count + 1)
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
-    """Проверка возможности комментирования постов"""
     def test_create_comment(self):
+        """Проверка возможности комментирования постов."""
         comments_count = Comment.objects.count()
 
         form_data = {
