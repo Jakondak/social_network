@@ -1,6 +1,7 @@
 import shutil
 import tempfile
 
+from bs4 import BeautifulSoup
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -181,6 +182,22 @@ class TaskPagesTests(TestCase):
         first_object = response.context["post"]
         image = first_object.image
         self.assertEqual(image.name.split("/")[-1], self.image.name)
+
+    """Тестирование работы кэширования на главной странице"""
+    def test_main_page_cache(self):
+        response = self.authorized_client.get(reverse("index"))
+        Post.objects.create(
+            text="Тестовый текст в cache",
+            author=self.user,
+        )
+        response_cache = self.authorized_client.get(reverse("index"))
+        html_string = response_cache.content.decode("UTF-8")
+        html_string = BeautifulSoup(html_string, "html.parser")
+        count_posts_cache = len(html_string.findAll("small"))
+        self.assertEqual(
+            count_posts_cache,
+            len(response.context.get("page").object_list)
+        )
 
     """
     Авторизованный пользователь может подписываться/отписываться на/от других
